@@ -118,10 +118,38 @@ const permissionToAssing = async (roleId) => {
 
     return tree
 }
+// 给角色分配权限
+const DoAssignPermission = async (params) => {
+    const conn = await connection
+    const { roleId, permissionId } = params
+    const menuIdList = permissionId ? permissionId.split(',').map(id => Number(id.trim())) : []
+
+    try {
+        // 开启事务
+        await conn.beginTransaction()
+
+        // 1. 删除角色原有的菜单权限
+        await conn.query('DELETE FROM role_menu WHERE role_id = ?', [roleId])
+
+        // 2. 重新分配菜单权限（批量 INSERT）
+        if (menuIdList.length > 0) {
+            const values = menuIdList.map(menuId => `(${roleId}, ${menuId})`).join(', ')
+            await conn.query(`INSERT INTO role_menu (role_id, menu_id) VALUES ${values}`)
+        }
+
+        // 提交事务
+        await conn.commit()
+    } catch (error) {
+        // 发生错误时回滚
+        await conn.rollback()
+        throw error
+    }
+}
 module.exports = {
     reqAllRole,
     saveRole,
     updateRole,
     deleteRole,
-    permissionToAssing
+    permissionToAssing,
+    DoAssignPermission
 }

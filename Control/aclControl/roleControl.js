@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {verifyToken} =require('../../utils/verifyToken')
-const {reqAllRole,saveRole,updateRole, deleteRole,permissionToAssing} = require("../../Mapper/acl/roleMapper");
+const {reqAllRole,saveRole,updateRole, deleteRole,permissionToAssing,DoAssignPermission} = require("../../Mapper/acl/roleMapper");
 // 获取全部的角色接口
 router.get('/admin/acl/role/:page/:limit',verifyToken,async (req,res)=>{
     try {
@@ -59,6 +59,18 @@ router.get('/admin/acl/permission/toAssign/:userId',verifyToken,async (req,res,n
        const result= await permissionToAssing(roleId)
         console.log(result)
         res.success(result)
+    }catch (err){
+        console.log(err)
+        res.error(500, '服务器内部错误，请稍后再试')
+    }
+})
+//给响应的角色分配权限
+router.post('/admin/acl/permission/doAssign',verifyToken, async (req,res)=>{
+    try {
+        const  params=req.query
+        await DoAssignPermission(params)
+
+        res.success()
     }catch (err){
         console.log(err)
         res.error(500, '服务器内部错误，请稍后再试')
