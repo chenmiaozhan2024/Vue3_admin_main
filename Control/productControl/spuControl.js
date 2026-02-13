@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../../utils/verifyToken')
-const {getAdminProduct,getTrademarkList,getSpuImageList,getSpuSaleAttrList,getBaseAttrList,deleteSpuBySpuId,finBySpuId, saveSpuInfo} =require('../../Mapper/productMapper/spuMapper')
+const {getAdminProduct,getTrademarkList,getSpuImageList,getSpuSaleAttrList,getBaseAttrList,deleteSpuBySpuId,finBySpuId, saveSpuInfo,updateSpuInfo,saveSkuInfo} =require('../../Mapper/productMapper/spuMapper')
 
 // 查看某一个已有的SPU下全部售卖的商品
 router.get('/admin/product/findBySpuId/:spuId',verifyToken, async (req,res,next)=>{
@@ -89,6 +89,28 @@ router.post('/admin/product/saveSpuInfo',verifyToken,async (req,res,next)=>{
         const body=req.body
         await saveSpuInfo(body)
 
+        res.success()
+    }catch (error){
+        console.error('查询失败:', error)
+        res.error(500, '服务器内部错误，请稍后再试');
+    }
+})
+// 修改已有spu
+router.post('/admin/product/updateSpuInfo',verifyToken,async (req,res,next)=>{
+    try {
+        const body=req.body
+        await updateSpuInfo(body)
+        res.success()
+    }catch (error){
+        console.error('查询失败:', error)
+        res.error(500, '服务器内部错误，请稍后再试');
+    }
+})
+// 追加一个新增的SKU地址
+router.post('/admin/product/saveSkuInfo',verifyToken,async (req,res,next)=>{
+    try {
+        const body=req.body
+        await saveSkuInfo(body)
         res.success()
     }catch (error){
         console.error('查询失败:', error)

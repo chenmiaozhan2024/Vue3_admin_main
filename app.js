@@ -5,8 +5,6 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
 // 引入路由
-const indexRouter = require('./Control/index');
-const usersRouter = require('./Control/users');
 const authRouter = require('./Control/auth');
 const trademarkRouter=require('./Control/productControl/trademarkControl')
 const arrtRouter=require('./Control/productControl/attrControl')
@@ -37,8 +35,6 @@ app.use('/static', express.static(path.join(__dirname, 'static')));
 app.use('/api/static', express.static(path.join(__dirname, 'static')));
 
 // 挂载路由
-app.use('/', indexRouter);
-app.use('/admin/acl/user', usersRouter);
 app.use(authRouter);
 app.use(trademarkRouter)
 app.use(arrtRouter)

@@ -32,7 +32,7 @@ const getSpuSaleAttrList=async (spuId)=>{
     const result=[]
     // const spuSaleAttrValueList=[]
     for(let item of row){
-        const [row1]=await conn.query("select sale_attr_value_id as id,sale_attr_value_name as saleAttrValueName,sale_attr_id as baseSaleAttrId, spu_id as spuId from sale_attr_value where spu_id=?&& sale_attr_id=?",[item.spuId,item.baseSaleAttrId])
+        const [row1]=await conn.query("select sale_attr_value_id as id,sale_attr_value_name as saleAttrValueName,sale_attr_id as baseSaleAttrId, spu_id as spuId from sale_attr_value where spu_id=?and sale_attr_id=?",[item.spuId,item.baseSaleAttrId])
         console.log(item)
         item.spuSaleAttrValueList=row1
         result.push(item)
@@ -150,6 +150,70 @@ const saveSpuInfo = async (params) => {
         throw new Error('保存失败: ' + error.message);
     }
 };
+const updateSpuInfo = async (params) => {
+    const conn = await connection;
+    const { id, spuName, description, category3Id, tmId, spuImageList, spuSaleAttrList } = params;
+
+    if (!id || !spuName || !category3Id || !tmId) {
+        throw new Error('缺少必要参数');
+    }
+
+    try {
+        await conn.beginTransaction();
+
+        await conn.query(
+            "UPDATE spu SET spu_name = ?, description = ?, category3_id = ?, tm_id = ? WHERE spu_id = ?",
+            [spuName, description, category3Id, tmId, id]
+        );
+
+        await conn.query("DELETE FROM spu_image_list WHERE spu_id = ?", [id]);
+
+        for (let item of spuImageList) {
+            if (item.imgUrl && item.imgName) {
+                const imageId = Date.now() + Math.floor(Math.random() * 1000);
+                await conn.query(
+                    "INSERT INTO spu_image_list (image_id, image_name, image_url, spu_id) VALUES (?, ?, ?, ?)",
+                    [imageId, item.imgName, item.imgUrl, id]
+                );
+            }
+        }
+
+        await conn.query("DELETE FROM spu_sale_attr WHERE spu_id = ?", [id]);
+
+        for (let attrItem of spuSaleAttrList) {
+            if (attrItem.baseSaleAttrId && attrItem.saleAttrName) {
+                const spuSaleAttrId = Date.now() + Math.floor(Math.random() * 1000);
+                await conn.query(
+                    "INSERT INTO spu_sale_attr (spu_sale_attr_id, base_sale_attr_id, sale_attr_name, spu_id) VALUES (?, ?, ?, ?)",
+                    [spuSaleAttrId, attrItem.baseSaleAttrId, attrItem.saleAttrName, id]
+                );
+
+                if (attrItem.spuSaleAttrValueList && attrItem.spuSaleAttrValueList.length > 0) {
+                    for (let valueItem of attrItem.spuSaleAttrValueList) {
+                        if (valueItem.saleAttrValueName) {
+                            const saleAttrValueId = Date.now() + Math.floor(Math.random() * 1000);
+                            await conn.query(
+                                "INSERT INTO sale_attr_value (sale_attr_value_id, sale_attr_value_name, sale_attr_id, spu_id) VALUES (?, ?, ?, ?)",
+                                [saleAttrValueId, valueItem.saleAttrValueName, attrItem.baseSaleAttrId, id]
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        await conn.commit();
+        console.log('SPU 信息更新成功，SPU ID:', id);
+        return { success: true, message: '更新成功', spuId: id };
+    } catch (error) {
+        await conn.rollback();
+        console.error('更新失败:', error);
+        throw new Error('更新失败: ' + error.message);
+    }
+};
+const saveSkuInfo=async (params)=>{
+    console.log(params)
+}
 module.exports={
     getAdminProduct,
     getTrademarkList,
@@ -158,5 +222,7 @@ module.exports={
     getBaseAttrList,
     deleteSpuBySpuId,
     finBySpuId,
-    saveSpuInfo
+    saveSpuInfo,
+    updateSpuInfo,
+    saveSkuInfo
 }

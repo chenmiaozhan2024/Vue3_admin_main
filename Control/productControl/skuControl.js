@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../../utils/verifyToken')
-const {getSkuList,putGoosOnSale,getSkuInfo} = require("../../Mapper/productMapper/skuMapper");
+const {getSkuList,putGoosOnSale,getSkuInfo,saveSkuInfo} = require("../../Mapper/productMapper/skuMapper");
 // 获取已有的商品的数据-SKU
 router.get('/admin/product/list/:page/:pageSize',verifyToken,async (req,res,next)=>{
     try {
@@ -67,6 +67,17 @@ router.delete('/admin/product/deleteSku/:skuId',verifyToken,async (req,res,next)
         res.success()
     }catch (error){
         console.error('查询失败:', error)
+        res.error(500, '服务器内部错误，请稍后再试');
+    }
+})
+// 保存SKU信息
+router.post('/admin/product/saveSkuInfo',verifyToken,async (req,res,next)=>{
+    try {
+        const body=req.body
+        await saveSkuInfo(body)
+        res.success()
+    }catch (error){
+        console.error('保存失败:', error)
         res.error(500, '服务器内部错误，请稍后再试');
     }
 })

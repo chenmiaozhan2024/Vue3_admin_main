@@ -45,8 +45,78 @@ const getSkuInfo=async (skuId)=>{
     return result
 }
 
+const saveSkuInfo = async (params) => {
+    const conn = await connection;
+    const { spuID, category3Id, tmId, skuName, weight, price, skuDesc, skuDefaultImg, isSale, skuAttrValueList, skuSaleAttrValueList, skuImageList } = params;
+
+    if (!spuID || !category3Id || !tmId || !skuName) {
+        throw new Error('缺少必要参数');
+    }
+
+    try {
+        await conn.beginTransaction();
+
+        const skuId = Date.now() + Math.floor(Math.random() * 1000);
+
+        await conn.query(
+            "INSERT INTO sku (sku_id, spu_id, category_3_id, tm_id, sku_name, weight, price, sku_desc, sku_default_img, is_sale) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [skuId, spuID, category3Id, tmId, skuName, weight, price, skuDesc, skuDefaultImg, isSale]
+        );
+
+        for (let imageItem of skuImageList) {
+            if (imageItem.imgUrl) {
+                const imageId = Date.now() + Math.floor(Math.random() * 1000);
+                const isDefault = imageItem.isDefault === "1" ? 1 : 0;
+                await conn.query(
+                    "INSERT INTO sku_image (image_id, sku_id, image_url, spu_image_id, is_default) VALUES (?, ?, ?, ?, ?)",
+                    [imageId, skuId, imageItem.imgUrl, imageItem.spuImgId, isDefault]
+                );
+            }
+        }
+
+        for (let attrItem of skuAttrValueList) {
+            if (attrItem.attrId && attrItem.valueId) {
+                const [attrNameResult] = await conn.query("SELECT attr_name FROM attr WHERE attr_id = ?", [attrItem.attrId]);
+                const [valueNameResult] = await conn.query("SELECT value_name FROM attr_value WHERE attr_value_id = ?", [attrItem.valueId]);
+                
+                if (attrNameResult.length > 0 && valueNameResult.length > 0) {
+                    const skuAttrValueId = Date.now() + Math.floor(Math.random() * 1000);
+                    await conn.query(
+                        "INSERT INTO sku_attr_value (sku_attr_value_id, attr_id, value_id, value_name, attr_name, sku_id) VALUES (?, ?, ?, ?, ?, ?)",
+                        [skuAttrValueId, attrItem.attrId, attrItem.valueId, valueNameResult[0].value_name, attrNameResult[0].attr_name, skuId]
+                    );
+                }
+            }
+        }
+
+        for (let saleAttrItem of skuSaleAttrValueList) {
+            if (saleAttrItem.saleAttrId && saleAttrItem.saleAttrValueId) {
+                const [saleAttrNameResult] = await conn.query("SELECT sale_attr_name FROM spu_sale_attr WHERE spu_sale_attr_id = ?", [saleAttrItem.saleAttrId]);
+                const [saleAttrValueNameResult] = await conn.query("SELECT sale_attr_value_name FROM sale_attr_value WHERE sale_attr_value_id = ?", [saleAttrItem.saleAttrValueId]);
+                
+                if (saleAttrNameResult.length > 0 && saleAttrValueNameResult.length > 0) {
+                    const skuSaleAttrValueId = Date.now() + Math.floor(Math.random() * 1000);
+                    await conn.query(
+                        "INSERT INTO sku_sale_attr_value (sku_sale_attr_value_id, sale_attr_id, sale_attr_value_id, sale_attr_name, sale_attr_value_name, sku_id) VALUES (?, ?, ?, ?, ?, ?)",
+                        [skuSaleAttrValueId, saleAttrItem.saleAttrId, saleAttrItem.saleAttrValueId, saleAttrNameResult[0].sale_attr_name, saleAttrValueNameResult[0].sale_attr_value_name, skuId]
+                    );
+                }
+            }
+        }
+
+        await conn.commit();
+        console.log('SKU 信息保存成功，SKU ID:', skuId);
+        return { success: true, message: '保存成功', skuId: skuId };
+    } catch (error) {
+        await conn.rollback();
+        console.error('保存失败:', error);
+        throw new Error('保存失败: ' + error.message);
+    }
+};
+
 module.exports={
     getSkuList,
     putGoosOnSale,
-    getSkuInfo
+    getSkuInfo,
+    saveSkuInfo
 }
