@@ -1,6 +1,6 @@
 # 硅谷甄选后端API
 
-> 一个基于 Express框架搭建的硅谷甄选后台API应用，已完成所有接口。
+> 一个基于 Express框架搭建的硅谷甄选后台API应用，已完成所有接口。对前端开发人员使用非常优化，
 
 ## 项目简介
 > 本项目是***尚硅谷***的硅谷甄选（前端项目）项目为基础，参考gitHub大神go语言版
@@ -80,8 +80,8 @@ module.exports = {
         host: '127.0.0.1',    // 数据库地址
         port: '3306',           // 数据库端口
         user: 'root',           // 用户名
-        password: '123456',      // 密码
-        database: 'sv_selection_db' // 数据库名
+        password: 'xxxx',      // 替换成你本地数据库密码
+        database: 'sv_selection_db' // 替换成你本地数据库名
     }
 }
 ```

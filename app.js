@@ -33,6 +33,8 @@ app.use(responseMiddleware);
 app.use(express.static(path.join(__dirname, 'public')));
 // 添加 static 目录的静态文件访问
 app.use('/static', express.static(path.join(__dirname, 'static')));
+// 添加兼容路由，处理旧的/api/static路径
+app.use('/api/static', express.static(path.join(__dirname, 'static')));
 
 // 挂载路由
 app.use('/', indexRouter);

@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
         // 生成日期目录路径: static/img/sph/20250208
         const now = new Date();
         const date = now.toISOString().slice(0, 10).replace(/-/g, ''); // 20250208
-        const uploadDir = path.join(__dirname, '..', 'static', 'img', 'sph', date);
+        const uploadDir = path.join(__dirname, '..', '..', 'static', 'img', 'sph', date);
 
         // 如果目录不存在则创建
         if (!fs.existsSync(uploadDir)) {
@@ -78,7 +78,24 @@ router.delete('/admin/product/baseTrademark/remove/:id',async (req,res,next)=>{
 })
 
 // 文件上传接口
+router.get('/admin/product/fileUpload', verifyToken, upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.error(400, '请选择要上传的文件');
+        }
 
+        // 生成日期
+        const now = new Date();
+        const date = now.toISOString().slice(0, 10).replace(/-/g, '');
+
+        // 返回图片 URL
+        const imgUrl = `/api/static/img/sph/${date}/${req.file.originalname}`;
+        res.success(imgUrl, 'success');
+    } catch (err) {
+        console.error('上传失败:', err);
+        res.error(500, '文件上传失败');
+    }
+});
 router.post('/admin/product/fileUpload', verifyToken, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
@@ -97,5 +114,6 @@ router.post('/admin/product/fileUpload', verifyToken, upload.single('file'), asy
         res.error(500, '文件上传失败');
     }
 });
+
 
 module.exports = router;
