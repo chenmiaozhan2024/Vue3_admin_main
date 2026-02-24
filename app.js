@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const cors = require('cors');
 
 // 引入路由
 const authRouter = require('./Control/auth');
@@ -19,6 +20,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -29,10 +31,10 @@ const responseMiddleware = require('./utils/response');
 app.use(responseMiddleware);
 
 app.use(express.static(path.join(__dirname, 'public')));
-// 添加 static 目录的静态文件访问
-app.use('/static', express.static(path.join(__dirname, 'static')));
-// 添加兼容路由，处理旧的/api/static路径
-app.use('/api/static', express.static(path.join(__dirname, 'static')));
+  // 添加 static 目录的静态文件访问
+  app.use('/static', express.static(path.join(__dirname, 'static')));
+  // 添加兼容路由，处理旧的/api/static路径
+  app.use('/api/static', express.static(path.join(__dirname, 'static')));
 
 // 挂载路由
 app.use(authRouter);
