@@ -2,7 +2,7 @@
 
 > 一个基于 Express框架搭建的硅谷甄选后台API应用，已完成项目所有所有接口，并进行完成自测，
 ## 前端源码：https://github.com/chenmiaozhan2024/Vue3_admin_template
-## 在线地址：http://106.53.107.187:10010
+
 ## 个人B站
 ![image.png](https://tc-cdn.processon.com/po/699d4cae07ad417580aade06-699d5426df7d4d1e4caebc86)
 ### apiFox地址
